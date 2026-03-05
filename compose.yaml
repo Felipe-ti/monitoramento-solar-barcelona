@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-    healthcheck: # Padrão industrial: garante que o banco está pronto antes do app
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
@@ -23,13 +23,28 @@ services:
     restart: always
     depends_on:
       db:
-        condition: service_healthy # Só sobe o Python quando o Postgres der "OK"
+        condition: service_healthy
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+    # Usa o CMD padrão do Dockerfile (python app.py)
+
+  sensor:
+    build: .
+    container_name: solar_sensor_edge
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Sobrescreve o comando para rodar o app do inversor
+    command: ["python", "sensor.py"] 
 
 volumes:
   pgdata:
