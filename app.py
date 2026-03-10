@@ -165,7 +165,7 @@ class SolarMonitor:
         try:
             conn = self.db_pool.getconn()
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-                cursor.execute(query, timeout=self.DB_TIMEOUT)
+                cursor.execute(query)
                 return cursor.fetchone()
         except psycopg2.DatabaseError as e:
             logger.error(f"Erro ao ler dados da BD: {e}")

@@ -10,7 +10,12 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Named volume com driver local (mais robusto para reboots)
+      - type: volume
+        source: pgdata
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -54,8 +59,16 @@ services:
     ports:
       - "3000:3000" # A porta padrão universal do Grafana
     volumes:
-      - grafana-storage:/var/lib/grafana
+      # Named volume explícito (padrão Docker)
+      - type: volume
+        source: grafana-storage
+        target: /var/lib/grafana
+        volume:
+          nocopy: true
 
 volumes:
+  # Driver local garante persistência entre reboots
   pgdata:
-  grafana-storage: # Volume novo para salvar os painéis visuais
+    driver: local
+  grafana-storage:
+    driver: local
